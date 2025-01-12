@@ -1,39 +1,48 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
+import { Octicons } from '@expo/vector-icons';
 
-export default function SignUp() {
-  const [email, setEmail] = useState('');
+export default function signIn() {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
-  const handleSignUp = () => {
-    // Implement sign-up logic here
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
-
-      <View className="flex-1 justify-center items-center p-4">
-        <Text className="text-2xl font-bold mb-4">Sign Up</Text>
-
+    <View style={styles.container}>
+      <View style={styles.formInputWrapper}>
+        <Octicons name="person" size={20} color="#00005" />
         <TextInput
-          className="border border-gray-300 rounded p-3 w-full mb-4"
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-        />
-
-        <TextInput
-          className="border border-gray-300 rounded p-3 w-full mb-4"
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-
-        <Button
-          title="Sign Up"
-          onPress={handleSignUp}
-          color="#4CAF50" // Green color for the button
+          style={styles.input}
+          placeholder="User Name"
+          value={username}
+          onChangeText={setUsername}
         />
       </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  formInputWrapper: {
+    width: '90%',
+    height: 55,
+    backgroundColor: '#f7f9ef',
+    borderWidth: 1,
+    borderColor: '#000',
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 8,
+  },
+  input: {
+    width: '90%',
+    height: '100%',
+    marginLeft: 10,
+  },
+});

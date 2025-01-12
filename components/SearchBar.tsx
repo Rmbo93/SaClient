@@ -2,8 +2,7 @@ import { View, Text ,StyleSheet} from 'react-native'
 import React from 'react'
 import { GOOGLE_MAPS_API_KEY } from '@/config'
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete'
-import { getBackgroundColorAsync } from 'expo-system-ui';
-import { TextInput } from 'react-native-gesture-handler';
+import "../global.css"
 export default function SearchBar() {
   return (
     <GooglePlacesAutocomplete 
