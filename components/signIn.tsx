@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View,Text } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
-
+import Ripple from 'react-native-material-ripple';
 export default function signIn() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -10,14 +10,36 @@ export default function signIn() {
   return (
     <View style={styles.container}>
       <View style={styles.formInputWrapper}>
-        <Octicons name="person" size={20} color="#00005" />
+        <Octicons name="person" size={20} color="#0066CC" />
         <TextInput
           style={styles.input}
-          placeholder="User Name"
+         
           value={username}
-          onChangeText={setUsername}
-        />
+          onChangeText={username => setUsername(username)}
+           placeholder="User Name" />
       </View>
+      <View style={styles.formInputWrapper}>
+        <Octicons name="shield-lock" size={20} color="#0066CC" />
+          <TextInput
+           style={styles.input}
+          value={password}
+      
+          onChangeText={password => setPassword(password)}
+          secureTextEntry={true}
+           placeholder="Password"/>
+
+      </View>
+      <Ripple
+        rippleColor="rgb(0, 0, 0)"
+        rippleOpacity={0.5}
+        rippleDuration={300}
+        rippleCentered={true}
+        rippleFades={false}
+        rippleContainerBorderRadius={20}
+        style={styles.login}
+      >
+          <Text style= {styles.buttonText}>Sign In</Text>
+      </Ripple>
     </View>
   );
 }
@@ -29,6 +51,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  login: {
+    padding: 15,
+    backgroundColor: '#17469F',
+    alignItems: 'center',
+    borderRadius: 10,
+    width: '90%',
+    marginTop: 20,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+ 
+  
+  }
+    ,
   formInputWrapper: {
     width: '90%',
     height: 55,
@@ -45,4 +81,8 @@ const styles = StyleSheet.create({
     height: '100%',
     marginLeft: 10,
   },
+  buttonText:{
+    fontSize:18,
+    color:'#fff'
+  }
 });
