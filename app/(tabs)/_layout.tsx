@@ -1,6 +1,8 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Ionicons } from '@expo/vector-icons';
+import "../../global.css"
+
 
 export default function TabsLayout() {
   return (

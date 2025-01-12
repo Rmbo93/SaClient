@@ -4,7 +4,7 @@ import SearchBar from '@/components/SearchBar'
 
 import 'react-native-get-random-values';
 import SignUp from '@/components/signIn';
-import "../global.css"
+import "../../global.css"
 
 export default function index() {
   return (
