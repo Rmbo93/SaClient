@@ -64,7 +64,7 @@ export default function SignIn() {
         </View>
 
         {/* Sign In Button */}
-        <Ripple
+          <Ripple
           rippleColor="rgb(0, 0, 0)"
           rippleOpacity={0.5}
           rippleDuration={300}
@@ -72,6 +72,7 @@ export default function SignIn() {
           rippleFades={false}
           rippleContainerBorderRadius={20}
           style={styles.login}
+          onPress={() => router.push('/home')} // Add this to navigate to the home page
         >
           <Text style={styles.buttonText}>Sign In</Text>
         </Ripple>
