@@ -3,6 +3,7 @@ import React from 'react'
 import SearchBar from '@/components/SearchBar'
 
 import 'react-native-get-random-values';
+import "../global.css"
 import SignIn from '@/components/signIn';
 
 export default function index() {

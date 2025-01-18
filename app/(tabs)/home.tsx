@@ -1,15 +1,106 @@
-import { View, Text,SafeAreaView,Image } from 'react-native'
-import React from 'react'
-import SearchBar from '@/components/SearchBar'
-
-import 'react-native-get-random-values';
-import "../../global.css"
-import SignIn from '@/components/signIn';
-
-export default function index() {
+import { View, Image, Text, StyleSheet } from 'react-native';
+import React, { Component } from 'react';
+import { TouchableOpacity } from 'react-native';
+import orderTaxi from '@/components/orderTaxi';
+import { useRouter } from 'expo-router';
+export default function Index() {
+  const router = useRouter();
   return (
-      <View className="flex-1 justify-center items-center">
-     
+   
+    <View style={styles.container}>
+    <Text style={styles.title}>Select a Service </Text>
+      {/* First Row */}
+      <View style={styles.row}>
+        {/* Image with Text */}
+        <View style={styles.imageContainer}>
+        <TouchableOpacity onPress={() => router.push('../components/orderTaxi')}>
+
+          
+          <Image
+            source={require('../../assets/images/istockphoto-1345298067-2048x2048.jpg')}
+            style={styles.image}
+          />
+          <Text style={styles.label}>Order Taxi</Text>
+        
+          </TouchableOpacity>
+
+        </View>
+
+        <View style={styles.imageContainer}>
+        <TouchableOpacity onPress={() => router.push('../components/orderTaxi')}>
+
+          <Image
+            source={require('../../assets/images/istockphoto-1675979127-2048x2048.jpg')}
+            style={styles.image}
+          />
+          <Text style={styles.label}>Order Food/Groceries</Text>
+        </View>
+        </TouchableOpacity>
       </View>
-  )
+
+      {/* Second Row */}
+      <View style={styles.row}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={require('../../assets/images/istockphoto-1345298067-2048x2048.jpg')}
+            style={[styles.image, { marginRight: 180}]} // Move last image left
+            />
+          <Text style={styles.overlayText}>Jor/Leb </Text>
+        </View>
+      </View>
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    padding: 20,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  imageContainer: {
+    alignItems: 'center', // Centers text and image
+    marginHorizontal: 10,
+  },
+  image: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  label: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  title: {
+    fontSize: 40,
+    color: '#000000',
+    fontWeight: 'bold',
+    marginBottom: 40,
+  },
+  
+  overlayText: {
+    position: 'absolute',
+    bottom: 0, // Position text at the bottom of the image
+    left: 9, // Add some margin to the left
+    color: '#333', // White text color for contrast
+    fontSize: 16,
+    fontWeight: 500,
+   
+  },
+});

@@ -72,7 +72,7 @@ export default function SignIn() {
           rippleFades={false}
           rippleContainerBorderRadius={20}
           style={styles.login}
-          onPress={() => router.push('/home')} // Add this to navigate to the home page
+          onPress={() => router.push('./home')} // Add this to navigate to the home page
         >
           <Text style={styles.buttonText}>Sign In</Text>
         </Ripple>
