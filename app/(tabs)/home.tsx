@@ -1,8 +1,9 @@
 import { View, Image, Text, StyleSheet } from 'react-native';
 import React, { Component } from 'react';
 import { TouchableOpacity } from 'react-native';
-import orderTaxi from '@/components/orderTaxi';
 import { useRouter } from 'expo-router';
+import OrderTaxi from '@/components/OrderTaxi';
+
 export default function Index() {
   const router = useRouter();
   return (
@@ -13,7 +14,7 @@ export default function Index() {
       <View style={styles.row}>
         {/* Image with Text */}
         <View style={styles.imageContainer}>
-        <TouchableOpacity onPress={() => router.push('../components/orderTaxi')}>
+        <TouchableOpacity onPress={() => router.push('../components/OrderTaxi')}>
 
           
           <Image
@@ -27,26 +28,32 @@ export default function Index() {
         </View>
 
         <View style={styles.imageContainer}>
-        <TouchableOpacity onPress={() => router.push('../components/orderTaxi')}>
+        <TouchableOpacity onPress={() => router.push('../components/OrderTaxi')}>
 
           <Image
             source={require('../../assets/images/istockphoto-1675979127-2048x2048.jpg')}
             style={styles.image}
           />
           <Text style={styles.label}>Order Food/Groceries</Text>
+          </TouchableOpacity>
         </View>
-        </TouchableOpacity>
+     
       </View>
 
       {/* Second Row */}
       <View style={styles.row}>
         <View style={styles.imageContainer}>
+        <TouchableOpacity onPress={() => router.push('../../components/OrderTaxi')}>
+
           <Image
             source={require('../../assets/images/istockphoto-1345298067-2048x2048.jpg')}
             style={[styles.image, { marginRight: 180}]} // Move last image left
             />
           <Text style={styles.overlayText}>Jor/Leb </Text>
+          </TouchableOpacity>
+         
         </View>
+        
       </View>
     </View>
   );

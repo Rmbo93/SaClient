@@ -1,11 +1,11 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-export default function orderTaxi() {
+export default function OrderTaxi() {
   return (
     
     <View>
-      <Text>orderTaxi</Text>
+      <Text>OrderTaxi</Text>
     </View>
   )
 }
