@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import OrderTaxi from '@/components/OrderTaxi';
-
 export default function Index() {
   const router = useRouter();
   return (
@@ -28,7 +27,7 @@ export default function Index() {
         </View>
 
         <View style={styles.imageContainer}>
-        <TouchableOpacity onPress={() => router.push('../components/OrderTaxi')}>
+        <TouchableOpacity onPress={() => router.push('../../components/OrderTaxi')}>
 
           <Image
             source={require('../../assets/images/istockphoto-1675979127-2048x2048.jpg')}

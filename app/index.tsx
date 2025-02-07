@@ -9,6 +9,7 @@ import SignIn from '@/components/signIn';
 export default function index() {
   return (
       <View className="flex-1 justify-center items-center">
+        
       <SignIn/>
      
       </View>

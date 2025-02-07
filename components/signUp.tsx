@@ -1,3 +1,4 @@
+// signUp.tsx (Updated)
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -12,7 +13,9 @@ import { Octicons } from '@expo/vector-icons';
 import Ripple from 'react-native-material-ripple';
 
 export default function CreateAccount() {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,9 +24,58 @@ export default function CreateAccount() {
     Keyboard.dismiss();
   };
 
-  const handleSignUp = () => {
-    console.log('Sign Up clicked');
-    console.log({ name, email, password, confirmPassword });
+  const handleSignUp = async (): Promise<void> => {
+    if (!firstName.trim() || !lastName.trim() || !mobile.trim() || !password.trim()) {
+      alert('Please fill out all required fields');
+      return;
+    }
+  
+    if (!/^[0-9]{8}$/.test(mobile)) {
+      alert('Mobile number must be exactly 8 digits');
+      return;
+    }
+  
+    if (password.length < 8) {
+      alert('Password must be at least 8 characters long');
+      return;
+    }
+  
+    if (password !== confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+  
+    try {
+      // Create the request body, including the email field only if it has a value
+      const requestBody: Record<string, string> = {
+        firstName,
+        lastName,
+        mobile,
+        password,
+      };
+  
+      if (email.trim()) {
+        requestBody.email = email;
+      }
+  
+      const response = await fetch('http://192.168.11.193:5000/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody), // Dynamically constructed body
+      });
+  
+      const result: { message?: string; error?: string } = await response.json();
+  
+      if (response.ok) {
+        alert('Signup successful!');
+        console.log('User registered:', result);
+      } else {
+        alert(`Signup failed: ${result.error}`);
+      }
+    } catch (err: unknown) {
+      console.error('Signup Error:', err);
+      alert('An error occurred. Please try again later.');
+    }
   };
 
   return (
@@ -31,26 +83,51 @@ export default function CreateAccount() {
       <View style={styles.container}>
         <Text style={styles.title}>Create an Account</Text>
 
-        {/* Name Input */}
+        {/* First Name Input */}
         <View style={styles.formInputWrapper}>
           <Octicons name="person" size={20} color="#808080" />
           <TextInput
             style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="Full Name"
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder="First Name"
             placeholderTextColor="#ccc"
           />
         </View>
 
-        {/* Email Input */}
+        {/* Last Name Input */}
+        <View style={styles.formInputWrapper}>
+          <Octicons name="person" size={20} color="#808080" />
+          <TextInput
+            style={styles.input}
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder="Last Name"
+            placeholderTextColor="#ccc"
+          />
+        </View>
+
+        {/* Mobile Number Input */}
+        <View style={styles.formInputWrapper}>
+          <Octicons name="device-mobile" size={20} color="#808080" />
+          <TextInput
+            style={styles.input}
+            value={mobile}
+            onChangeText={setMobile}
+            placeholder="Mobile Number"
+            placeholderTextColor="#ccc"
+            keyboardType="phone-pad"
+          />
+        </View>
+
+        {/* Email Input (Optional) */}
         <View style={styles.formInputWrapper}>
           <Octicons name="mail" size={20} color="#808080" />
           <TextInput
             style={styles.input}
             value={email}
             onChangeText={setEmail}
-            placeholder="Email Address"
+            placeholder="Email Address (Optional)"
             placeholderTextColor="#ccc"
             keyboardType="email-address"
           />

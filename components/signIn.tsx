@@ -14,13 +14,45 @@ import { useRouter } from 'expo-router';
 
 export default function SignIn() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
+  const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
 
   const dismissKeyboard = () => {
     Keyboard.dismiss();
   };
-
+  const handleSignIn = async () => {
+    if (!mobile.trim() || !password.trim()) {
+      alert('Please fill out all fields');
+      return;
+    }
+  
+    if (!/^[0-9]{8}$/.test(mobile)) {
+      alert('Mobile number must be exactly 8 digits');
+      return;
+    }
+  
+    try {
+      const response = await fetch('http://192.168.11.193:5000/check-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobile, password }), // Include password here
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        console.log('User authenticated successfully:', result);
+        alert('Sign-in successful');
+        router.push('./home'); // Redirect to the home page
+      } else {
+        console.error('Sign-in failed:', result.error);
+        alert(`Sign-in failed: ${result.error}`);
+      }
+    } catch (err) {
+      console.error('Sign-In Error:', err);
+      alert('An error occurred. Please try again later.');
+    }
+  };
   const handleGoogleSignUp = () => {
     console.log('Sign Up with Google');
   };
@@ -40,15 +72,15 @@ export default function SignIn() {
 
         {/* Username Input */}
         <View style={styles.formInputWrapper}>
-          <Octicons name="person" size={20} color="#808080" />
+          <Octicons name="device-mobile" size={20} color="#808080" />
           <TextInput
             style={styles.input}
-            value={username}
-            onChangeText={setUsername}
-            placeholder="User Name"
+            value={mobile}
+            onChangeText={setMobile}
+            placeholder="Phone Number"
             placeholderTextColor="#ccc"
           />
-        </View>
+        </View> 
 
         {/* Password Input */}
         <View style={styles.formInputWrapper}>
@@ -72,7 +104,7 @@ export default function SignIn() {
           rippleFades={false}
           rippleContainerBorderRadius={20}
           style={styles.login}
-          onPress={() => router.push('./home')} // Add this to navigate to the home page
+          onPress={handleSignIn} // Add this to navigate to the home page
         >
           <Text style={styles.buttonText}>Sign In</Text>
         </Ripple>
