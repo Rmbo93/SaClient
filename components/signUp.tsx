@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
 import Ripple from 'react-native-material-ripple';
+import { router } from 'expo-router';
 
 export default function CreateAccount() {
   const [firstName, setFirstName] = useState('');
@@ -69,6 +70,8 @@ export default function CreateAccount() {
       if (response.ok) {
         alert('Signup successful!');
         console.log('User registered:', result);
+        router.push('/')
+        
       } else {
         alert(`Signup failed: ${result.error}`);
       }
@@ -174,8 +177,9 @@ export default function CreateAccount() {
         </Ripple>
 
         {/* Back to Sign In */}
-        <TouchableOpacity style={styles.backToSignIn} onPress={() => console.log('Back to Sign In')}>
+        <TouchableOpacity style={styles.backToSignIn} onPress={() => router.push('/')}>
           <Text style={styles.backToSignInText}>Already have an account? Sign In</Text>
+          
         </TouchableOpacity>
       </View>
     </TouchableWithoutFeedback>
