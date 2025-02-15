@@ -12,7 +12,11 @@ const AccountScreen: React.FC = () => {
 
   const handleLogout = async () => {
     try {
+<<<<<<< HEAD
       const response = await fetch("http://192.168.179.76:5000/logout", { method: "POST" });
+=======
+      const response = await fetch("http://192.168.11.193:5000/logout", { method: "POST" });
+>>>>>>> facbabe247525cc97b826cb04986edbe4559c8c9
 
       if (response.ok) {
         Alert.alert("Success", "Logged out successfully.");
@@ -28,6 +32,10 @@ const AccountScreen: React.FC = () => {
   };
 
   const handleDeleteAccount = async () => {
+<<<<<<< HEAD
+=======
+
+>>>>>>> facbabe247525cc97b826cb04986edbe4559c8c9
     Alert.alert(
       "Confirm Deletion",
       "Are you sure you want to delete your account? This action cannot be undone.",
@@ -38,6 +46,7 @@ const AccountScreen: React.FC = () => {
           style: "destructive",
           onPress: async () => {
             try {
+<<<<<<< HEAD
               // Fetch user information from authentication state
               const response = await fetch("http://192.168.179.76:5000/get-user", {
                 method: "GET",
@@ -63,6 +72,21 @@ const AccountScreen: React.FC = () => {
                 router.push("/"); // Redirect user after deletion
               } else {
                 const data = await deleteResponse.json();
+=======
+              const response = await fetch("http://192.168.11.193:5000/delete-account", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ mobile: '' }), // Replace dynamically
+              });
+              
+              if (response.ok) {
+                Alert.alert("Deleted", "Your account has been deleted.");
+                router.push('/')
+
+                // Optionally navigate to login/signup screen
+              } else {
+                const data = await response.json();
+>>>>>>> facbabe247525cc97b826cb04986edbe4559c8c9
                 Alert.alert("Error", data.error || "Failed to delete account.");
               }
             } catch (error) {

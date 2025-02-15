@@ -70,6 +70,8 @@ export default function CreateAccount() {
       if (response.ok) {
         alert('Signup successful!');
         console.log('User registered:', result);
+        router.push('/')
+        
       } else {
         alert(`Signup failed: ${result.error}`);
       }
@@ -177,6 +179,7 @@ export default function CreateAccount() {
         {/* Back to Sign In */}
         <TouchableOpacity style={styles.backToSignIn} onPress={() => router.push('/')}>
           <Text style={styles.backToSignInText}>Already have an account? Sign In</Text>
+          
         </TouchableOpacity>
       </View>
     </TouchableWithoutFeedback>
