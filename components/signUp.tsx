@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
 import Ripple from 'react-native-material-ripple';
+import { router } from 'expo-router';
 
 export default function CreateAccount() {
   const [firstName, setFirstName] = useState('');
@@ -58,7 +59,7 @@ export default function CreateAccount() {
         requestBody.email = email;
       }
   
-      const response = await fetch('http://192.168.11.193:5000/signup', {
+      const response = await fetch('http://192.168.179.76:5000/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody), // Dynamically constructed body
@@ -174,7 +175,7 @@ export default function CreateAccount() {
         </Ripple>
 
         {/* Back to Sign In */}
-        <TouchableOpacity style={styles.backToSignIn} onPress={() => console.log('Back to Sign In')}>
+        <TouchableOpacity style={styles.backToSignIn} onPress={() => router.push('/')}>
           <Text style={styles.backToSignInText}>Already have an account? Sign In</Text>
         </TouchableOpacity>
       </View>

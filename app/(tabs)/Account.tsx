@@ -1,10 +1,78 @@
 import React, { useState } from "react";
-import { View, Text, Image, SectionList, StyleSheet, TouchableOpacity, Modal } from "react-native";
+import { View, Text, Image, SectionList, TouchableOpacity, Modal, Alert } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons"; // For icons
+import { StyleSheet } from "react-native";
+import { router, useRouter } from 'expo-router';
+import SignIn from "@/components/signIn";
+
 
 const AccountScreen: React.FC = () => {
   const [imageError, setImageError] = useState(false); // Track if the image fails to load
   const [modalVisible, setModalVisible] = useState(false); // Control modal visibility
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://192.168.179.76:5000/logout", { method: "POST" });
+
+      if (response.ok) {
+        Alert.alert("Success", "Logged out successfully.");
+        router.push('/')
+        // Optionally navigate to login screen or reset state
+      } else {
+        const data = await response.json();
+        Alert.alert("Error", data.error || "Failed to logout.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Network error. Please try again.");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Fetch user information from authentication state
+              const response = await fetch("http://192.168.179.76:5000/get-user", {
+                method: "GET",
+                credentials: "include", // Ensure cookies or session are included
+              });
+  
+              if (!response.ok) {
+                throw new Error("Failed to retrieve user data.");
+              }
+  
+              const userData = await response.json();
+              const userMobile = userData.mobile; // Assuming the backend returns the user's mobile
+  
+              // Proceed with account deletion
+              const deleteResponse = await fetch("http://192.168.179.76:5000/delete-account", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ mobile: userMobile }), // Use dynamic user data
+              });
+  
+              if (deleteResponse.ok) {
+                Alert.alert("Deleted", "Your account has been deleted.");
+                router.push("/"); // Redirect user after deletion
+              } else {
+                const data = await deleteResponse.json();
+                Alert.alert("Error", data.error || "Failed to delete account.");
+              }
+            } catch (error) {
+              Alert.alert("Error", "Network error. Please try again.");
+            }
+          },
+        },
+      ]
+    );
+  };
 
   // All sections and their items
   const sections = [
@@ -36,14 +104,14 @@ const AccountScreen: React.FC = () => {
     {
       title: "Account Options",
       data: [
-        { title: "Log Out", icon: "log-out-outline" },
-        { title: "Delete Account", icon: "trash-outline" },
+        { title: "Log Out", icon: "log-out-outline", action: handleLogout },
+        { title: "Delete Account", icon: "trash-outline", action: handleDeleteAccount },
       ],
     },
   ];
 
-  const renderItem = ({ item }: { item: { title: string; icon: string } }) => (
-    <TouchableOpacity style={styles.itemContainer}>
+  const renderItem = ({ item }: { item: { title: string; icon: string; action?: () => void } }) => (
+    <TouchableOpacity style={styles.itemContainer} onPress={item.action ? item.action : () => {}}>
       <View style={styles.itemContent}>
         <Icon name={item.icon} size={20} color="#555" style={styles.itemIcon} />
         <Text style={styles.itemText}>{item.title}</Text>
@@ -122,6 +190,7 @@ const AccountScreen: React.FC = () => {
 };
 
 export default AccountScreen;
+
 
 const styles = StyleSheet.create({
   container: {
@@ -228,3 +297,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+function useEffect(arg0: () => void, arg1: never[]) {
+  throw new Error("Function not implemented.");
+}
+

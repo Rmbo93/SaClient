@@ -32,7 +32,7 @@ export default function SignIn() {
     }
   
     try {
-      const response = await fetch('http://192.168.11.193:5000/check-user', {
+      const response = await fetch('http://192.168.179.76:5000/check-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobile, password }), // Include password here
