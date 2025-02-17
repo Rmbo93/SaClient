@@ -7,7 +7,10 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { FontAwesome, MaterialIcons, Octicons } from '@expo/vector-icons';
 import Ripple from 'react-native-material-ripple';
 import { useRouter } from 'expo-router';
@@ -22,37 +25,50 @@ export default function SignIn() {
   };
   const handleSignIn = async () => {
     if (!mobile.trim() || !password.trim()) {
-      alert('Please fill out all fields');
+      Alert.alert('Error', 'Please fill out all fields');
       return;
     }
   
     if (!/^[0-9]{8}$/.test(mobile)) {
-      alert('Mobile number must be exactly 8 digits');
+      Alert.alert('Error', 'Mobile number must be exactly 8 digits');
+      return;
+    }
+  
+    if (password.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters long');
       return;
     }
   
     try {
-      const response = await fetch('http://192.168.179.76:5000/check-user', {
+      const response = await fetch('http://192.168.11.193:5000/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile, password }), // Include password here
+        body: JSON.stringify({ mobile, password }),
       });
   
       const result = await response.json();
+      console.log('✅ Server Response:', result);
   
-      if (response.ok) {
-        console.log('User authenticated successfully:', result);
-        alert('Sign-in successful');
-        router.push('./home'); // Redirect to the home page
-      } else {
-        console.error('Sign-in failed:', result.error);
-        alert(`Sign-in failed: ${result.error}`);
+      if (!response.ok) {
+        Alert.alert('Error', result.error || 'Login failed');
+        return;
       }
+  
+      if (!result.token) {
+        Alert.alert('Error', 'No token received from server');
+        return;
+      }
+  
+      await AsyncStorage.setItem('userToken', result.token);
+      Alert.alert('Success', 'Sign-in successful');
+      router.push('/home');
+  
     } catch (err) {
-      console.error('Sign-In Error:', err);
-      alert('An error occurred. Please try again later.');
+      console.error('❌ Fetch Error:', err);
+      Alert.alert('Error', 'Network issue, try again later.');
     }
   };
+  
   const handleGoogleSignUp = () => {
     console.log('Sign Up with Google');
   };

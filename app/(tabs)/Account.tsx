@@ -3,7 +3,7 @@ import { View, Text, Image, SectionList, TouchableOpacity, Modal, Alert } from "
 import Icon from "react-native-vector-icons/Ionicons"; // For icons
 import { StyleSheet } from "react-native";
 import { router, useRouter } from 'expo-router';
-import SignIn from "@/components/signIn";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const AccountScreen: React.FC = () => {
@@ -12,30 +12,14 @@ const AccountScreen: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-<<<<<<< HEAD
-      const response = await fetch("http://192.168.179.76:5000/logout", { method: "POST" });
-=======
-      const response = await fetch("http://192.168.11.193:5000/logout", { method: "POST" });
->>>>>>> facbabe247525cc97b826cb04986edbe4559c8c9
-
-      if (response.ok) {
-        Alert.alert("Success", "Logged out successfully.");
-        router.push('/')
-        // Optionally navigate to login screen or reset state
-      } else {
-        const data = await response.json();
-        Alert.alert("Error", data.error || "Failed to logout.");
-      }
+      await AsyncStorage.removeItem('userToken');
+      Alert.alert("Logged out successfully");
+      router.push('/');
     } catch (error) {
-      Alert.alert("Error", "Network error. Please try again.");
+      Alert.alert("Error", "Failed to log out.");
     }
   };
-
   const handleDeleteAccount = async () => {
-<<<<<<< HEAD
-=======
-
->>>>>>> facbabe247525cc97b826cb04986edbe4559c8c9
     Alert.alert(
       "Confirm Deletion",
       "Are you sure you want to delete your account? This action cannot be undone.",
@@ -46,50 +30,32 @@ const AccountScreen: React.FC = () => {
           style: "destructive",
           onPress: async () => {
             try {
-<<<<<<< HEAD
-              // Fetch user information from authentication state
-              const response = await fetch("http://192.168.179.76:5000/get-user", {
-                method: "GET",
-                credentials: "include", // Ensure cookies or session are included
-              });
-  
-              if (!response.ok) {
-                throw new Error("Failed to retrieve user data.");
+              // استرجاع التوكن من AsyncStorage
+              const token = await AsyncStorage.getItem("userToken");
+              if (!token) {
+                Alert.alert("Error", "You must be logged in to delete your account.");
+                return;
               }
   
-              const userData = await response.json();
-              const userMobile = userData.mobile; // Assuming the backend returns the user's mobile
-  
-              // Proceed with account deletion
-              const deleteResponse = await fetch("http://192.168.179.76:5000/delete-account", {
+              // إرسال طلب حذف الحساب
+              const deleteResponse = await fetch("http://192.168.11.193:5000/users/delete", {
                 method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ mobile: userMobile }), // Use dynamic user data
+                headers: { 
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`
+                }
               });
   
               if (deleteResponse.ok) {
                 Alert.alert("Deleted", "Your account has been deleted.");
-                router.push("/"); // Redirect user after deletion
+                await AsyncStorage.removeItem("userToken"); // حذف التوكن بعد الحذف
+                router.push("/"); // إعادة التوجيه بعد الحذف
               } else {
                 const data = await deleteResponse.json();
-=======
-              const response = await fetch("http://192.168.11.193:5000/delete-account", {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ mobile: '' }), // Replace dynamically
-              });
-              
-              if (response.ok) {
-                Alert.alert("Deleted", "Your account has been deleted.");
-                router.push('/')
-
-                // Optionally navigate to login/signup screen
-              } else {
-                const data = await response.json();
->>>>>>> facbabe247525cc97b826cb04986edbe4559c8c9
                 Alert.alert("Error", data.error || "Failed to delete account.");
               }
             } catch (error) {
+              console.error("Delete Account Error:", error);
               Alert.alert("Error", "Network error. Please try again.");
             }
           },
@@ -97,7 +63,8 @@ const AccountScreen: React.FC = () => {
       ]
     );
   };
-
+  
+  
   // All sections and their items
   const sections = [
     {

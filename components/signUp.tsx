@@ -8,10 +8,12 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
 import Ripple from 'react-native-material-ripple';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CreateAccount() {
   const [firstName, setFirstName] = useState('');
@@ -25,62 +27,66 @@ export default function CreateAccount() {
     Keyboard.dismiss();
   };
 
-  const handleSignUp = async (): Promise<void> => {
-    if (!firstName.trim() || !lastName.trim() || !mobile.trim() || !password.trim()) {
-      alert('Please fill out all required fields');
+  const handleSignUp = async () => {
+    // التحقق من إدخال جميع البيانات المطلوبة
+    if (!firstName.trim() || !lastName.trim() || !mobile.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      Alert.alert('Error', 'All fields are required except email.');
       return;
     }
   
+    // التحقق من أن رقم الهاتف يتكون من 8 أرقام فقط
     if (!/^[0-9]{8}$/.test(mobile)) {
-      alert('Mobile number must be exactly 8 digits');
+      Alert.alert('Error', 'Mobile number must be exactly 8 digits.');
       return;
     }
   
+    // التحقق من أن كلمة المرور تحتوي على 8 أحرف على الأقل
     if (password.length < 8) {
-      alert('Password must be at least 8 characters long');
+      Alert.alert('Error', 'Password must be at least 8 characters long.');
       return;
     }
   
+    // التحقق من تطابق كلمة المرور مع تأكيدها
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      Alert.alert('Error', 'Passwords do not match.');
       return;
     }
   
+    // التحقق من صحة البريد الإلكتروني إذا تم إدخاله
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      Alert.alert('Error', 'Invalid email format.');
+      return;
+    }
     try {
-      // Create the request body, including the email field only if it has a value
-      const requestBody: Record<string, string> = {
-        firstName,
-        lastName,
-        mobile,
-        password,
-      };
-  
-      if (email.trim()) {
-        requestBody.email = email;
-      }
-  
-      const response = await fetch('http://192.168.179.76:5000/signup', {
+      const response = await fetch('http://192.168.11.193:5000/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody), // Dynamically constructed body
+        body: JSON.stringify({ firstName, lastName, mobile, email, password }),
       });
   
-      const result: { message?: string; error?: string } = await response.json();
+      const result = await response.json();
+      console.log('✅ Server Response:', result);
   
-      if (response.ok) {
-        alert('Signup successful!');
-        console.log('User registered:', result);
-        router.push('/')
-        
-      } else {
-        alert(`Signup failed: ${result.error}`);
+      if (!response.ok) {
+        Alert.alert('Signup Failed', result.error || 'Something went wrong');
+        return;
       }
-    } catch (err: unknown) {
-      console.error('Signup Error:', err);
-      alert('An error occurred. Please try again later.');
+  
+      if (!result.token) {
+        Alert.alert('Error', 'No token received from server');
+        return;
+      }
+  
+      await AsyncStorage.setItem('userToken', result.token);
+      Alert.alert('Success', 'Account created successfully');
+      router.push('/');
+  
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Network issue, try again.';
+      console.error('❌ Fetch Error:', error);
+      Alert.alert('Error', errorMessage);
     }
-  };
-
+  }
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
       <View style={styles.container}>
