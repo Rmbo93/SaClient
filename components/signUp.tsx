@@ -1,4 +1,3 @@
-// signUp.tsx (Updated)
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -8,12 +7,13 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   TouchableOpacity,
-  Alert,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
 import Ripple from 'react-native-material-ripple';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CreateAccount() {
   const [firstName, setFirstName] = useState('');
@@ -27,158 +27,163 @@ export default function CreateAccount() {
     Keyboard.dismiss();
   };
 
-  const handleSignUp = async () => {
-    // التحقق من إدخال جميع البيانات المطلوبة
-    if (!firstName.trim() || !lastName.trim() || !mobile.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
-      Alert.alert('Error', 'All fields are required except email.');
+  const handleSignUp = async (): Promise<void> => {
+    if (!firstName.trim() || !lastName.trim() || !mobile.trim() || !password.trim()) {
+      alert('Please fill out all required fields');
       return;
     }
   
-    // التحقق من أن رقم الهاتف يتكون من 8 أرقام فقط
     if (!/^[0-9]{8}$/.test(mobile)) {
-      Alert.alert('Error', 'Mobile number must be exactly 8 digits.');
+      alert('Mobile number must be exactly 8 digits');
       return;
     }
   
-    // التحقق من أن كلمة المرور تحتوي على 8 أحرف على الأقل
     if (password.length < 8) {
-      Alert.alert('Error', 'Password must be at least 8 characters long.');
+      alert('Password must be at least 8 characters long');
       return;
     }
   
-    // التحقق من تطابق كلمة المرور مع تأكيدها
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match.');
+      alert('Passwords do not match');
       return;
     }
   
-    // التحقق من صحة البريد الإلكتروني إذا تم إدخاله
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      Alert.alert('Error', 'Invalid email format.');
-      return;
-    }
     try {
-      const response = await fetch('http://192.168.11.193:5000/users', {
+      // Create the request body, including the email field only if it has a value
+      const requestBody: Record<string, string> = {
+        firstName,
+        lastName,
+        mobile,
+        password,
+      };
+  
+      if (email.trim()) {
+        requestBody.email = email;
+      }
+  
+      const response = await fetch('http://172.20.10.2:5000/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName, mobile, email, password }),
+        body: JSON.stringify(requestBody), // Dynamically constructed body
       });
   
-      const result = await response.json();
-      console.log('✅ Server Response:', result);
+      const result: { message?: string; error?: string } = await response.json();
   
-      if (!response.ok) {
-        Alert.alert('Signup Failed', result.error || 'Something went wrong');
-        return;
+      if (response.ok) {
+        alert('Signup successful!');
+        console.log('User registered:', result);
+        router.push('/')
+        
+      } else {
+        alert(`Signup failed: ${result.error}`);
       }
-  
-      if (!result.token) {
-        Alert.alert('Error', 'No token received from server');
-        return;
-      }
-  
-      await AsyncStorage.setItem('userToken', result.token);
-      Alert.alert('Success', 'Account created successfully');
-      router.push('/');
-  
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Network issue, try again.';
-      console.error('❌ Fetch Error:', error);
-      Alert.alert('Error', errorMessage);
+    } catch (err: unknown) {
+      console.error('Signup Error:', err);
+      alert('An error occurred. Please try again later.');
     }
-  }
+  };
+
   return (
-    <TouchableWithoutFeedback onPress={dismissKeyboard}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Create an Account</Text>
-
-        {/* First Name Input */}
-        <View style={styles.formInputWrapper}>
-          <Octicons name="person" size={20} color="#808080" />
-          <TextInput
-            style={styles.input}
-            value={firstName}
-            onChangeText={setFirstName}
-            placeholder="First Name"
-            placeholderTextColor="#ccc"
-          />
-        </View>
-
-        {/* Last Name Input */}
-        <View style={styles.formInputWrapper}>
-          <Octicons name="person" size={20} color="#808080" />
-          <TextInput
-            style={styles.input}
-            value={lastName}
-            onChangeText={setLastName}
-            placeholder="Last Name"
-            placeholderTextColor="#ccc"
-          />
-        </View>
-
-        {/* Mobile Number Input */}
-        <View style={styles.formInputWrapper}>
-          <Octicons name="device-mobile" size={20} color="#808080" />
-          <TextInput
-            style={styles.input}
-            value={mobile}
-            onChangeText={setMobile}
-            placeholder="Mobile Number"
-            placeholderTextColor="#ccc"
-            keyboardType="phone-pad"
-          />
-        </View>
-
-        {/* Email Input (Optional) */}
-        <View style={styles.formInputWrapper}>
-          <Octicons name="mail" size={20} color="#808080" />
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Email Address (Optional)"
-            placeholderTextColor="#ccc"
-            keyboardType="email-address"
-          />
-        </View>
-
-        {/* Password Input */}
-        <View style={styles.formInputWrapper}>
-          <Octicons name="lock" size={20} color="#808080" />
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholder="Password"
-            placeholderTextColor="#ccc"
-          />
-        </View>
-
-        {/* Confirm Password Input */}
-        <View style={styles.formInputWrapper}>
-          <Octicons name="lock" size={20} color="#808080" />
-          <TextInput
-            style={styles.input}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-            placeholder="Confirm Password"
-            placeholderTextColor="#ccc"
-          />
-        </View>
-
-        {/* Sign Up Button */}
-        <Ripple
-          rippleColor="rgb(0, 0, 0)"
-          rippleOpacity={0.5}
-          rippleDuration={300}
-          rippleCentered={true}
-          rippleFades={false}
-          rippleContainerBorderRadius={20}
-          style={styles.signUpButton}
-          onPress={handleSignUp}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={dismissKeyboard}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }}
+          keyboardShouldPersistTaps="handled"
         >
+          <View style={styles.container}>
+            <Text style={styles.title}>Hello! Register to get started</Text>
+
+            {/* First Name Input */}
+            <View style={styles.formInputWrapper}>
+              <Octicons name="person" size={20} color="#808080" />
+              <TextInput
+                style={styles.input}
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholder="First Name"
+                placeholderTextColor="black"
+              />
+            </View>
+
+            {/* Last Name Input */}
+            <View style={styles.formInputWrapper}>
+              <Octicons name="person" size={20} color="#808080" />
+              <TextInput
+                style={styles.input}
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder="Last Name"
+                placeholderTextColor="black"
+              />
+            </View>
+
+            {/* Mobile Number Input */}
+            <View style={styles.formInputWrapper}>
+              <Octicons name="device-mobile" size={20} color="#808080" />
+              <TextInput
+                style={styles.input}
+                value={mobile}
+                onChangeText={setMobile}
+                placeholder="Mobile Number"
+                placeholderTextColor="black"
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            {/* Email Input (Optional) */}
+            <View style={styles.formInputWrapper}>
+              <Octicons name="mail" size={20} color="#808080" />
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Email Address (Optional)"
+                placeholderTextColor="black"
+                keyboardType="email-address"
+              />
+            </View>
+
+            {/* Password Input */}
+            <View style={styles.formInputWrapper}>
+              <Octicons name="lock" size={20} color="#808080" />
+              <TextInput
+                style={styles.input}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                placeholder="Password"
+                placeholderTextColor="black"
+              />
+            </View>
+
+            {/* Confirm Password Input */}
+            <View style={styles.formInputWrapper}>
+              <Octicons name="lock" size={20} color="#808080" />
+              <TextInput
+                style={styles.input}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+                placeholder="Confirm Password"
+                placeholderTextColor="black"
+              />
+            </View>
+
+            {/* Sign Up Button */}
+            <Ripple
+              rippleColor="rgb(0, 0, 0)"
+              rippleOpacity={0.5}
+              rippleDuration={300}
+              rippleCentered={true}
+              rippleFades={false}
+              rippleContainerBorderRadius={20}
+              style={styles.signUpButton}
+              onPress={handleSignUp}
+            >
           <Text style={styles.signUpButtonText}>Sign Up</Text>
         </Ripple>
 
@@ -187,65 +192,65 @@ export default function CreateAccount() {
           <Text style={styles.backToSignInText}>Already have an account? Sign In</Text>
           
         </TouchableOpacity>
-      </View>
-    </TouchableWithoutFeedback>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
+    minHeight: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fff',
     paddingHorizontal: 20,
   },
   title: {
-    fontSize: 40,
-    color: '#000000',
+    fontSize: 25,
     fontWeight: 'bold',
-    marginBottom: 40,
+    color: '#000',
+    marginBottom: 60,
   },
   formInputWrapper: {
-    width: '100%',
-    height: 55,
-    backgroundColor: '#f7f9ef',
-    borderWidth: 1,
-    borderColor: '#DCDCDC',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 8,
-    marginBottom: 20,
-    borderRadius: 6,
+    backgroundColor: '#f8f9f9',
+    borderRadius: 2,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+    width: '100%',
+    height: 50,
   },
   input: {
     flex: 1,
     height: '100%',
     marginLeft: 10,
     color: '#000',
+    textAlign: 'left', 
   },
+  
   signUpButton: {
-    padding: 15,
-    backgroundColor: '#000000',
-    alignItems: 'center',
-    borderRadius: 10,
+    backgroundColor: '#000',
     width: '100%',
-    marginTop: 20,
-    display: 'flex',
-    flexDirection: 'row',
+    height: 50,
+    borderRadius: 10,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
   },
   signUpButtonText: {
-    fontSize: 16,
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   backToSignIn: {
     marginTop: 20,
     padding: 10,
   },
   backToSignInText: {
-    color: '#000000',
+    color: 'black',
     fontSize: 16,
     textDecorationLine: 'underline',
     fontWeight: 'bold',

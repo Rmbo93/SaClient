@@ -1,58 +1,79 @@
-import { View, Image, Text, StyleSheet } from 'react-native';
-import React, { Component } from 'react';
-import { TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import OrderTaxi from '@/components/OrderTaxi';
-export default function Index() {
+import * as Location from 'expo-location';
+
+export default function Services() {
   const router = useRouter();
+  const [address, setAddress] = useState('Fetching location...');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setAddress('Location permission denied');
+          setLoading(false);
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        let reverseGeocode = await Location.reverseGeocodeAsync(location.coords);
+
+        if (reverseGeocode.length > 0) {
+          let addr = reverseGeocode[0];
+
+          let street = addr.street || 'Unknown Street';
+          let city = addr.city || 'Unknown City';
+          let postalCode = addr.postalCode || 'No Postal Code';
+          let country = addr.country || 'Unknown Country';
+
+          setAddress(` ${street}, ${postalCode}, ${city}, ${country}`);
+        } else {
+          setAddress('Location Not Found');
+        }
+      } catch (error) {
+        console.error('Error fetching location:', error);
+        setAddress('Error retrieving location');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
   return (
-   
     <View style={styles.container}>
-    <Text style={styles.title}>Select a Service </Text>
-      {/* First Row */}
-      <View style={styles.row}>
-        {/* Image with Text */}
-        <View style={styles.imageContainer}>
-        <TouchableOpacity onPress={() => router.push('../components/OrderTaxi')}>
+      <Text style={styles.title}>Services</Text>
 
-          
-          <Image
-            source={require('../../assets/images/istockphoto-1345298067-2048x2048.jpg')}
-            style={styles.image}
-          />
+      {/* Address Section - Shows Real Address */}
+      <TouchableOpacity style={styles.addressContainer} onPress={() => console.log('Change Address')}>
+        {loading ? (
+          <ActivityIndicator size="small" color="#374151" />
+        ) : (
+          <Text style={styles.addressText}>📍 {address}</Text>
+        )}
+      </TouchableOpacity>
+
+      <Text style={styles.sectionTitle}>Go Anywhere</Text>
+      <View style={styles.gridContainer}>
+        <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('../../components/OrderTaxi')}>
+          <Image source={require('../../assets/images/istockphoto-1675979127-2048x2048.jpg')} style={styles.icon} />
           <Text style={styles.label}>Order Taxi</Text>
-        
-          </TouchableOpacity>
+        </TouchableOpacity>
 
-        </View>
-
-        <View style={styles.imageContainer}>
-        <TouchableOpacity onPress={() => router.push('../../components/OrderTaxi')}>
-
-          <Image
-            source={require('../../assets/images/istockphoto-1675979127-2048x2048.jpg')}
-            style={styles.image}
-          />
-          <Text style={styles.label}>Order Food/Groceries</Text>
-          </TouchableOpacity>
-        </View>
-     
+        <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('../../components/OrderTaxi')}>
+          <Image source={require('../../assets/images/istockphoto-1675979127-2048x2048.jpg')} style={styles.icon} />
+          <Text style={styles.label}>LEB/JOR Taxi</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Second Row */}
-      <View style={styles.row}>
-        <View style={styles.imageContainer}>
-        <TouchableOpacity onPress={() => router.push('../../components/OrderTaxi')}>
-
-          <Image
-            source={require('../../assets/images/istockphoto-1345298067-2048x2048.jpg')}
-            style={[styles.image, { marginRight: 180}]} // Move last image left
-            />
-          <Text style={styles.overlayText}>Jor/Leb </Text>
-          </TouchableOpacity>
-         
-        </View>
-        
+      <Text style={styles.sectionTitle}>Get Anything Delivered</Text>
+      <View style={styles.gridContainer}>
+        <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('../../components/OrderTaxi')}>
+          <Image source={require('../../assets/images/istockphoto-1675979127-2048x2048.jpg')} style={styles.icon} />
+          <Text style={styles.label}>Order Food</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -61,52 +82,64 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F9FAFB',
     padding: 20,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  imageContainer: {
-    alignItems: 'center', // Centers text and image
-    marginHorizontal: 10,
-  },
-  image: {
-    width: 120,
-    height: 120,
-    borderRadius: 10,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  label: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
+    paddingTop: 100,
   },
   title: {
-    fontSize: 40,
-    color: '#000000',
+    fontSize: 32,
     fontWeight: 'bold',
+    color: '#1E293B',
     marginBottom: 40,
   },
-  
-  overlayText: {
-    position: 'absolute',
-    bottom: 0, // Position text at the bottom of the image
-    left: 9, // Add some margin to the left
-    color: '#333', // White text color for contrast
+  addressContainer: {
+    backgroundColor: '#E5E7EB',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  addressText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1E293B',
+    marginBottom: 10,
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    marginBottom: 20,
+  },
+  serviceCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '45%',
+    aspectRatio: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  icon: {
+    width: 50,
+    height: 50,
+    marginBottom: 10,
+  },
+  label: {
     fontSize: 16,
-    fontWeight: 500,
-   
+    color: '#1E293B',
+    fontWeight: '500',
   },
 });

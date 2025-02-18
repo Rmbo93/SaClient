@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -7,10 +8,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { FontAwesome, MaterialIcons, Octicons } from '@expo/vector-icons';
 import Ripple from 'react-native-material-ripple';
 import { useRouter } from 'expo-router';
@@ -25,50 +23,37 @@ export default function SignIn() {
   };
   const handleSignIn = async () => {
     if (!mobile.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please fill out all fields');
+      alert('Please fill out all fields');
       return;
     }
   
     if (!/^[0-9]{8}$/.test(mobile)) {
-      Alert.alert('Error', 'Mobile number must be exactly 8 digits');
-      return;
-    }
-  
-    if (password.length < 8) {
-      Alert.alert('Error', 'Password must be at least 8 characters long');
+      alert('Mobile number must be exactly 8 digits');
       return;
     }
   
     try {
-      const response = await fetch('http://192.168.11.193:5000/users/login', {
+      const response = await fetch('http://172.20.10.2:5000/check-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile, password }),
+        body: JSON.stringify({ mobile, password }), // Include password here
       });
   
       const result = await response.json();
-      console.log('✅ Server Response:', result);
   
-      if (!response.ok) {
-        Alert.alert('Error', result.error || 'Login failed');
-        return;
+      if (response.ok) {
+        console.log('User authenticated successfully:', result);
+        alert('Sign-in successful');
+        router.push('./home'); // Redirect to the home page
+      } else {
+        console.error('Sign-in failed:', result.error);
+        alert(`Sign-in failed: ${result.error}`);
       }
-  
-      if (!result.token) {
-        Alert.alert('Error', 'No token received from server');
-        return;
-      }
-  
-      await AsyncStorage.setItem('userToken', result.token);
-      Alert.alert('Success', 'Sign-in successful');
-      router.push('/home');
-  
     } catch (err) {
-      console.error('❌ Fetch Error:', err);
-      Alert.alert('Error', 'Network issue, try again later.');
+      console.error('Sign-In Error:', err);
+      alert('An error occurred. Please try again later.');
     }
   };
-  
   const handleGoogleSignUp = () => {
     console.log('Sign Up with Google');
   };
@@ -181,7 +166,7 @@ const styles = StyleSheet.create({
   formInputWrapper: {
     width: '100%',
     height: 55,
-    backgroundColor: '#f7f9ef',
+    backgroundColor: '#f8f9f9',
     borderWidth: 1,
     borderColor: '#DCDCDC',
     flexDirection: 'row',
@@ -194,6 +179,7 @@ const styles = StyleSheet.create({
     height: '100%',
     marginLeft: 10,
     color: '#000',
+    textAlign: 'left'
   },
   login: {
     padding: 15,
@@ -258,10 +244,10 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontWeight: 'bold',
     fontSize: 16,
-    marginLeft: 10, // Add spacing between icon and text
+    marginLeft: 10, 
   },
   icon: {
-    marginRight: 10, // Space between icon and text
+    marginRight: 10, 
   },
   createAccountButton: {
     padding: 10,
