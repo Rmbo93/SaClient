@@ -14,7 +14,7 @@ const AccountScreen: React.FC = () => {
     try {
       await AsyncStorage.removeItem('userToken');
       Alert.alert("Logged out successfully");
-      router.push('/');
+      router.replace('/');
     } catch (error) {
       Alert.alert("Error", "Failed to log out.");
     }
@@ -49,7 +49,13 @@ const AccountScreen: React.FC = () => {
               if (deleteResponse.ok) {
                 Alert.alert("Deleted", "Your account has been deleted.");
                 await AsyncStorage.removeItem("userToken"); // حذف التوكن بعد الحذف
-                router.push("/"); // إعادة التوجيه بعد الحذف
+  
+                // ✅ إجبار إعادة تحميل التطبيق لمنع الرجوع إلى الصفحة السابقة
+                router.replace('/');
+                setTimeout(() => {
+                  router.replace('/');
+                }, 500);
+  
               } else {
                 const data = await deleteResponse.json();
                 Alert.alert("Error", data.error || "Failed to delete account.");
