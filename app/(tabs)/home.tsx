@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import * as Location from 'expo-location';
 
 export default function Services() {
-  const router = useRouter();
+
   const [address, setAddress] = useState('Fetching location...');
   const [loading, setLoading] = useState(true);
 

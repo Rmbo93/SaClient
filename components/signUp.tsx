@@ -10,10 +10,13 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ToastAndroid,
+  Alert,
 } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
 import Ripple from 'react-native-material-ripple';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CreateAccount() {
   const [firstName, setFirstName] = useState('');
@@ -27,59 +30,78 @@ export default function CreateAccount() {
     Keyboard.dismiss();
   };
 
-  const handleSignUp = async (): Promise<void> => {
-    if (!firstName.trim() || !lastName.trim() || !mobile.trim() || !password.trim()) {
-      alert('Please fill out all required fields');
+  const showToast = (message: string) => {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      Alert.alert(message);
+    }
+  };
+
+  const handleSignUp = async () => {
+    if (!firstName.trim() || !lastName.trim() || !mobile.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      showToast('All fields are required except email.');
       return;
     }
-  
+
     if (!/^[0-9]{8}$/.test(mobile)) {
-      alert('Mobile number must be exactly 8 digits');
+      showToast('Mobile number must be exactly 8 digits.');
       return;
     }
-  
+
+    if (password.trim() !== confirmPassword.trim()) {
+      showToast('Passwords do not match');
+      return;
+    }
+
     if (password.length < 8) {
-      alert('Password must be at least 8 characters long');
+      showToast('Password must be at least 8 characters long');
       return;
     }
-  
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
+
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showToast('Invalid email format.');
       return;
     }
-  
+
     try {
-      // Create the request body, including the email field only if it has a value
       const requestBody: Record<string, string> = {
         firstName,
         lastName,
         mobile,
         password,
       };
-  
+
       if (email.trim()) {
         requestBody.email = email;
       }
-  
-      const response = await fetch('http://172.20.10.2:5000/signup', {
+
+      const response = await fetch('http://192.168.11.193:5000/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody), // Dynamically constructed body
+        body: JSON.stringify(requestBody),
       });
-  
-      const result: { message?: string; error?: string } = await response.json();
-  
-      if (response.ok) {
-        alert('Signup successful!');
-        console.log('User registered:', result);
-        router.push('/')
-        
-      } else {
-        alert(`Signup failed: ${result.error}`);
+
+      const result = await response.json();
+      console.log('✅ Server Response:', result);
+
+      if (!response.ok) {
+        showToast(result.error || 'Signup Failed');
+        return;
       }
+
+      if (!result.token) {
+        showToast('No token received from server');
+        return;
+      }
+
+      await AsyncStorage.setItem('userToken', result.token);
+      showToast('Account created successfully');
+      router.push('/');
+
     } catch (err: unknown) {
       console.error('Signup Error:', err);
-      alert('An error occurred. Please try again later.');
+      showToast('An error occurred. Please try again later.');
     }
   };
 
@@ -97,7 +119,6 @@ export default function CreateAccount() {
           <View style={styles.container}>
             <Text style={styles.title}>Hello! Register to get started</Text>
 
-            {/* First Name Input */}
             <View style={styles.formInputWrapper}>
               <Octicons name="person" size={20} color="#808080" />
               <TextInput
@@ -109,7 +130,6 @@ export default function CreateAccount() {
               />
             </View>
 
-            {/* Last Name Input */}
             <View style={styles.formInputWrapper}>
               <Octicons name="person" size={20} color="#808080" />
               <TextInput
@@ -121,7 +141,6 @@ export default function CreateAccount() {
               />
             </View>
 
-            {/* Mobile Number Input */}
             <View style={styles.formInputWrapper}>
               <Octicons name="device-mobile" size={20} color="#808080" />
               <TextInput
@@ -134,7 +153,6 @@ export default function CreateAccount() {
               />
             </View>
 
-            {/* Email Input (Optional) */}
             <View style={styles.formInputWrapper}>
               <Octicons name="mail" size={20} color="#808080" />
               <TextInput
@@ -147,7 +165,6 @@ export default function CreateAccount() {
               />
             </View>
 
-            {/* Password Input */}
             <View style={styles.formInputWrapper}>
               <Octicons name="lock" size={20} color="#808080" />
               <TextInput
@@ -160,7 +177,6 @@ export default function CreateAccount() {
               />
             </View>
 
-            {/* Confirm Password Input */}
             <View style={styles.formInputWrapper}>
               <Octicons name="lock" size={20} color="#808080" />
               <TextInput
@@ -173,7 +189,6 @@ export default function CreateAccount() {
               />
             </View>
 
-            {/* Sign Up Button */}
             <Ripple
               rippleColor="rgb(0, 0, 0)"
               rippleOpacity={0.5}
@@ -184,20 +199,19 @@ export default function CreateAccount() {
               style={styles.signUpButton}
               onPress={handleSignUp}
             >
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
-        </Ripple>
+              <Text style={styles.signUpButtonText}>Sign Up</Text>
+            </Ripple>
 
-        {/* Back to Sign In */}
-        <TouchableOpacity style={styles.backToSignIn} onPress={() => router.push('/')}>
-          <Text style={styles.backToSignInText}>Already have an account? Sign In</Text>
-          
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.backToSignIn} onPress={() => router.push('/')}>
+              <Text style={styles.backToSignInText}>Already have an account? Sign In</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -228,9 +242,8 @@ const styles = StyleSheet.create({
     height: '100%',
     marginLeft: 10,
     color: '#000',
-    textAlign: 'left', 
+    textAlign: 'left',
   },
-  
   signUpButton: {
     backgroundColor: '#000',
     width: '100%',
