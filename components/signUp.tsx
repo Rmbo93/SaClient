@@ -76,7 +76,7 @@ export default function CreateAccount() {
         requestBody.email = email;
       }
 
-      const response = await fetch('http://192.168.11.193:5000/users', {
+      const response = await fetch('http://192.168.11.66:5000/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),

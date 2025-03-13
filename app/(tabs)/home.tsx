@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
+import TaxiOrderScreen from '../Order/OrderTaxi';
 
+TaxiOrderScreen
 export default function Services() {
 
   const [address, setAddress] = useState('Fetching location...');
@@ -57,7 +59,7 @@ export default function Services() {
 
       <Text style={styles.sectionTitle}>Go Anywhere</Text>
       <View style={styles.gridContainer}>
-        <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('../../components/OrderTaxi')}>
+        <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('/Order/OrderTaxi')}>
           <Image source={require('../../assets/images/istockphoto-1675979127-2048x2048.jpg')} style={styles.icon} />
           <Text style={styles.label}>Order Taxi</Text>
         </TouchableOpacity>
@@ -70,7 +72,7 @@ export default function Services() {
 
       <Text style={styles.sectionTitle}>Get Anything Delivered</Text>
       <View style={styles.gridContainer}>
-        <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('../../components/OrderTaxi')}>
+        <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('/Order/orderFood')}>
           <Image source={require('../../assets/images/istockphoto-1675979127-2048x2048.jpg')} style={styles.icon} />
           <Text style={styles.label}>Order Food</Text>
         </TouchableOpacity>
