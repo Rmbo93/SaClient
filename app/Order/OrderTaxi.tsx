@@ -1,48 +1,137 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import MapView from 'react-native-maps';
+import React, { useState } from "react";
+import { View, Button, StyleSheet, Dimensions, Image, TouchableOpacity, Text } from "react-native";
+import MapView, { Marker, Polyline } from "react-native-maps";
+import axios from "axios";
+import { GOOGLE_MAPS_API_KEY } from '@/config';
+import SearchBar from "@/components/SearchBar";
+import SearchBarDes from "@/components/SearchBarDes";
 
-const App = () => {
+interface DirectionsResponse {
+  routes: Array<{
+    overview_polyline: {
+      points: string;
+    };
+    legs: Array<{
+      distance: { text: string };
+      duration: { text: string };
+    }>;
+  }>;
+}
+
+const OrderTaxi = () => {
+  const [fromCoords, setFromCoords] = useState<any>(null);
+  const [toCoords, setToCoords] = useState<any>(null);
+  const [coordinates, setCoordinates] = useState<any[]>([]);
+  const [region, setRegion] = useState({
+    latitude: 37.7749,
+    longitude: -122.4194,
+    latitudeDelta: 0.1,
+    longitudeDelta: 0.1,
+  });
+  const [distance, setDistance] = useState("");
+  const [duration, setDuration] = useState("");
+
+  const getRoute = async () => {
+    if (!fromCoords || !toCoords) return;
+
+    try {
+      const response = await axios.get<DirectionsResponse>(
+        `https://maps.googleapis.com/maps/api/directions/json?origin=${fromCoords.latitude},${fromCoords.longitude}&destination=${toCoords.latitude},${toCoords.longitude}&key=${GOOGLE_MAPS_API_KEY}&mode=driving&alternatives=true`
+      );
+      
+      console.log("Google Maps API Response:", response.data);
+
+      if (response.data.routes && response.data.routes.length > 0) {
+        const points = response.data.routes[0].overview_polyline.points;
+        const decodedPoints = decodePolyline(points);
+
+        setCoordinates(decodedPoints);
+        setDistance(response.data.routes[0].legs[0].distance.text);
+        setDuration(response.data.routes[0].legs[0].duration.text);
+
+        setRegion({
+          latitude: decodedPoints[0].latitude,
+          longitude: decodedPoints[0].longitude,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        });
+      } else {
+        console.warn("No routes found in response");
+      }
+    } catch (error) {
+      console.error("Error fetching directions: ", error);
+    }
+  };
+
+  const decodePolyline = (encoded: string) => {
+    let index = 0, len = encoded.length;
+    let lat = 0, lng = 0;
+    const coordinates = [];
+
+    while (index < len) {
+      let shift = 0, result = 0, b;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
+      lat += dlat;
+
+      shift = 0; result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
+      lng += dlng;
+
+      coordinates.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
+    }
+    return coordinates;
+  };
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Taxi Lux</Text>
+      <SearchBar onPlaceSelected={setFromCoords} />
+      <SearchBarDes onPlaceSelected={setToCoords} />
+      <Button title="Show Route" onPress={getRoute} />
+      <MapView style={styles.map} region={region}>
+        {coordinates.length > 0 && (
+          <>
+            <Marker coordinate={coordinates[0]} title="Start" />
+            <Marker coordinate={coordinates[coordinates.length - 1]} title="End" />
+            <Polyline coordinates={coordinates} strokeWidth={4} strokeColor="blue" />
+          </>
+        )}
+      </MapView>
+      {distance && duration && (
+        <View style={styles.infoBox}>
+          <Button title={`Distance: ${distance} | Time: ${duration}`} onPress={() => {}} />
+        </View>
+      )}
+      <Text>السيارات المتاحة</Text>
+
+      {/* Taxi Type Selection */}
+      <View style={styles.taxiOptionsContainer}>
+        <TouchableOpacity style={styles.taxiOption}>
+          <Image source={require('../../assets/images/yallo.jpg')} style={styles.taxiImage} />
+          <Text>تاكسي صفرا</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.taxiOption}>
+          <Image source={require('../../assets/images/yallo.jpg')} style={styles.taxiImage} />
+          <Text>تاكسي خاصة</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.taxiOption}>
+          <Image source={require('../../assets/images/yallo.jpg')} style={styles.taxiImage} />
+          <Text>VIP</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.taxiOption}>
+          <Image source={require('../../assets/images/yallo.jpg')} style={styles.taxiImage} />
+          <Text>9 ركاب</Text>
+        </TouchableOpacity>
       </View>
-
-      <View style={styles.searchContainer}>
-        <TextInput 
-          style={styles.searchBar} 
-          placeholder='Pickup Location' 
-          placeholderTextColor="#B0BEC5"
-        />
-        <TextInput 
-          style={styles.searchBar} 
-          placeholder='Destination' 
-          placeholderTextColor="#B0BEC5"
-        />
-      </View>
-
-      <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: 3/* User's latitude */,
-          longitude:3 /* User's longitude */,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
-      />
-
-      {/* ETA and Fare Display */}
-      <View style={styles.infoContainer}>
-        <Animated.View style={styles.etaContainer}>
-          <Text style={styles.eta}>ETA: 3 min</Text>
-        </Animated.View>
-        <Text style={styles.fare}>Estimated Fare: $15</Text>
-      </View>
-
-      <TouchableOpacity style={styles.fab}>
-        <Text style={styles.fabText}>Book</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -50,78 +139,29 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
-  },
-  header: {
-    padding: 20,
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  title: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    fontWeight: '600',
-  },
-  searchContainer: {
     padding: 10,
-  },
-  searchBar: {
-    height: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 25,
-    marginBottom: 10,
-    paddingLeft: 15,
-    fontSize: 16,
-    textColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 5,
+    backgroundColor: "#fff",
   },
   map: {
-    flex: 1,
+    width: Dimensions.get("window").width,
+    height: Dimensions.get("window").height * 0.3,
   },
-  infoContainer: {
-    padding: 15,
-    position: 'absolute',
-    bottom: 20,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 15,
-    width: '90%',
-    shadowColor: '#000',
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 5,
+  infoBox: {
+    marginTop: 10,
   },
-  etaContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+  taxiOptionsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 20,
   },
-  eta: {
-    fontSize: 22,
-    color: '#FF3D00',
-    fontWeight: 'bold',
+  taxiOption: {
+    alignItems: "center",
   },
-  fare: {
-    fontSize: 20,
-    color: '#E0E0E0',
-    textAlign: 'center',
-    marginTop: 5,
-  },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    backgroundColor: '#6A00F4',
-    borderRadius: 30,
-    padding: 15,
-    elevation: 5,
-  },
-  fabText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+  taxiImage: {
+    width: 50,
+    height: 50,
+    marginBottom: 5,
   },
 });
 
-export default App;
+export default OrderTaxi;

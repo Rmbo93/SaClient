@@ -3,15 +3,15 @@ import React from 'react';
 import { GOOGLE_MAPS_API_KEY } from '@/config';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
-interface SearchBarProps {
+interface SearchBarDesProps {
   onPlaceSelected: (location: { latitude: number; longitude: number }) => void;
 }
 
-export default function SearchBar({ onPlaceSelected }: SearchBarProps) {
+export default function SearchBarDes({ onPlaceSelected }: SearchBarDesProps) {
   return (
     <GooglePlacesAutocomplete
       styles={inputBoxStyles}
-      placeholder="Where from?"
+      placeholder="Where to?"
       nearbyPlacesAPI="GooglePlacesSearch"
       debounce={400}
       query={{
@@ -37,7 +37,7 @@ export default function SearchBar({ onPlaceSelected }: SearchBarProps) {
 const inputBoxStyles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
-    marginTop: 20,
+    marginTop: 10,
     flex: 0,
   },
   textInput: {
