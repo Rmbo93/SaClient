@@ -22,6 +22,8 @@ const OrderTaxi = () => {
   const [fromCoords, setFromCoords] = useState<any>(null);
   const [toCoords, setToCoords] = useState<any>(null);
   const [coordinates, setCoordinates] = useState<any[]>([]);
+  const [selectedTaxiType, setSelectedTaxiType] = useState<string | null>(null);
+
   const [region, setRegion] = useState({
     latitude: 37.7749,
     longitude: -122.4194,
@@ -30,7 +32,28 @@ const OrderTaxi = () => {
   });
   const [distance, setDistance] = useState("");
   const [duration, setDuration] = useState("");
-
+  
+  const notifyDriversVIP = async () => {
+    try {
+      const res = await fetch('http://192.168.11.66:5000/api/users/notify-vip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'طلب VIP جديد من عميل' }),
+      });
+  
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ Failed to notify drivers:', errorText);
+        return;
+      }
+  
+      const data = await res.json();
+      console.log('🔔 Notification Sent:', data);
+    } catch (error) {
+      console.error('❌ Exception while notifying drivers:', error);
+    }
+  };
+  
   const getRoute = async () => {
     if (!fromCoords || !toCoords) return;
 
@@ -123,10 +146,18 @@ const OrderTaxi = () => {
           <Image source={require('../../assets/images/yallo.jpg')} style={styles.taxiImage} />
           <Text>تاكسي خاصة</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.taxiOption}>
+        <TouchableOpacity
+          style={styles.taxiOption}
+          onPress={() => {
+            setSelectedTaxiType('VIP');
+            notifyDriversVIP(); // ⬅️ إرسال إشعار للسائقين
+          }}
+        >
+
           <Image source={require('../../assets/images/yallo.jpg')} style={styles.taxiImage} />
           <Text>VIP</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.taxiOption}>
           <Image source={require('../../assets/images/yallo.jpg')} style={styles.taxiImage} />
           <Text>9 ركاب</Text>

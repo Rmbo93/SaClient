@@ -11,6 +11,7 @@ export default function Services() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    
     (async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
